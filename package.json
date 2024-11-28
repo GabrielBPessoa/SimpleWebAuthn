@@ -1,0 +1,48 @@
+{
+  "name": "forked-simple-webauthn",
+  "version": "1.1.0",
+  "description": "A project converted from Deno to Node.js",
+  "scripts": {
+    "version": "node whatGotUpdated.js",
+    "test:browser": "cd packages/browser && npm run test",
+    "test:server": "cd packages/server && npm run test",
+    "test:coverage": "npm run test:coverage:collect && npm run test:coverage:lcov && npm run test:coverage:html && npm run test:coverage:view",
+    "test:coverage:collect": "nyc mocha",
+    "test:coverage:lcov": "nyc report --reporter=lcov",
+    "test:coverage:html": "nyc report --reporter=html",
+    "test:coverage:view": "cd html_cov && npx http-server -b 127.0.0.1",
+    "build:types": "cd packages/types && npm run build",
+    "build:browser": "cd packages/browser && npm run build",
+    "build:server": "cd packages/server && npm run build",
+    "publish:types": "cd packages/types && npm run publish",
+    "publish:browser": "cd packages/browser && npm run publish",
+    "publish:server": "cd packages/server && npm run publish"
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.26.0",
+    "@deno/cache-dir": "^0.13.2",
+    "@deno/dnt": "^0.41.3",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@std/assert": "^1.0.7",
+    "@std/path": "^1.0.8",
+    "@std/testing": "^1.0.4",
+    "jsdom": "^25.0.1",
+    "rollup": "^4.27.3",
+    "rollup-plugin-version-injector": "^1.3.3",
+    "ts-morph": "^24.0.0",
+    "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "nyc": "^15.1.0",
+    "mocha": "^10.0.0",
+    "http-server": "^14.1.1"
+  },
+  "workspaces": [
+    "packages/browser",
+    "packages/server",
+    "packages/types"
+  ]
+}
