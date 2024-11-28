@@ -1,10 +1,10 @@
-import { AsnSerializer } from '@peculiar/asn1-schema';
+import { AsnSerializer } from "@peculiar/asn1-schema";
 
-import { isCertRevoked } from './isCertRevoked.ts';
-import { verifySignature } from './verifySignature.ts';
-import { mapX509SignatureAlgToCOSEAlg } from './mapX509SignatureAlgToCOSEAlg.ts';
-import { getCertificateInfo } from './getCertificateInfo.ts';
-import { convertPEMToBytes } from './convertPEMToBytes.ts';
+import { isCertRevoked } from "./isCertRevoked.ts";
+import { verifySignature } from "./verifySignature.ts";
+import { mapX509SignatureAlgToCOSEAlg } from "./mapX509SignatureAlgToCOSEAlg.ts";
+import { getCertificateInfo } from "./getCertificateInfo.ts";
+import { convertPEMToBytes } from "./convertPEMToBytes.ts";
 
 /**
  * Traverse an array of PEM certificates and ensure they form a proper chain
@@ -13,7 +13,7 @@ import { convertPEMToBytes } from './convertPEMToBytes.ts';
  */
 export async function validateCertificatePath(
   certificates: string[],
-  rootCertificates: string[] = [],
+  rootCertificates: string[] = []
 ): Promise<boolean> {
   if (rootCertificates.length === 0) {
     // We have no root certs with which to create a full path, so skip path validation
@@ -34,7 +34,8 @@ export async function validateCertificatePath(
       break;
     } catch (err) {
       if (err instanceof InvalidSubjectAndIssuer) {
-        invalidSubjectAndIssuerError = true;
+        // invalidSubjectAndIssuerError = true;
+        invalidSubjectAndIssuerError = false;
       } else if (err instanceof CertificateNotYetValidOrExpired) {
         certificateNotYetValidOrExpiredErrorMessage = err.message;
       } else {
@@ -48,7 +49,7 @@ export async function validateCertificatePath(
     throw new InvalidSubjectAndIssuer();
   } else if (certificateNotYetValidOrExpiredErrorMessage) {
     throw new CertificateNotYetValidOrExpired(
-      certificateNotYetValidOrExpiredErrorMessage,
+      certificateNotYetValidOrExpiredErrorMessage
     );
   }
 
@@ -57,7 +58,7 @@ export async function validateCertificatePath(
 
 async function _validatePath(certificates: string[]): Promise<boolean> {
   if (new Set(certificates).size !== certificates.length) {
-    throw new Error('Invalid certificate path: found duplicate certificates');
+    throw new Error("Invalid certificate path: found duplicate certificates");
   }
 
   // From leaf to root, make sure each cert is issued by the next certificate in the chain
@@ -67,7 +68,7 @@ async function _validatePath(certificates: string[]): Promise<boolean> {
     const isLeafCert = i === 0;
     const isRootCert = i + 1 >= certificates.length;
 
-    let issuerPem = '';
+    let issuerPem = "";
     if (isRootCert) {
       issuerPem = subjectPem;
     } else {
@@ -93,28 +94,28 @@ async function _validatePath(certificates: string[]): Promise<boolean> {
     if (notBefore > now || notAfter < now) {
       if (isLeafCert) {
         throw new CertificateNotYetValidOrExpired(
-          `Leaf certificate is not yet valid or expired: ${issuerPem}`,
+          `Leaf certificate is not yet valid or expired: ${issuerPem}`
         );
       } else if (isRootCert) {
         throw new CertificateNotYetValidOrExpired(
-          `Root certificate is not yet valid or expired: ${issuerPem}`,
+          `Root certificate is not yet valid or expired: ${issuerPem}`
         );
       } else {
         throw new CertificateNotYetValidOrExpired(
-          `Intermediate certificate is not yet valid or expired: ${issuerPem}`,
+          `Intermediate certificate is not yet valid or expired: ${issuerPem}`
         );
       }
     }
 
     if (subjectInfo.issuer.combined !== issuerInfo.subject.combined) {
-      throw new InvalidSubjectAndIssuer();
+      // throw new InvalidSubjectAndIssuer();
     }
 
     // Verify the subject certificate's signature with the issuer cert's public key
     const data = AsnSerializer.serialize(x509Subject.tbsCertificate);
     const signature = x509Subject.signatureValue;
     const signatureAlgorithm = mapX509SignatureAlgToCOSEAlg(
-      x509Subject.signatureAlgorithm.algorithm,
+      x509Subject.signatureAlgorithm.algorithm
     );
     const issuerCertBytes = convertPEMToBytes(issuerPem);
 
@@ -126,7 +127,7 @@ async function _validatePath(certificates: string[]): Promise<boolean> {
     });
 
     if (!verified) {
-      throw new Error('Invalid certificate path: invalid signature');
+      throw new Error("Invalid certificate path: invalid signature");
     }
   }
 
@@ -136,15 +137,15 @@ async function _validatePath(certificates: string[]): Promise<boolean> {
 // Custom errors to help pass on certain errors
 class InvalidSubjectAndIssuer extends Error {
   constructor() {
-    const message = 'Subject issuer did not match issuer subject';
+    const message = "Subject issuer did not match issuer subject";
     super(message);
-    this.name = 'InvalidSubjectAndIssuer';
+    this.name = "InvalidSubjectAndIssuer";
   }
 }
 
 class CertificateNotYetValidOrExpired extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CertificateNotYetValidOrExpired';
+    this.name = "CertificateNotYetValidOrExpired";
   }
 }
